@@ -23,6 +23,27 @@ What our `main` has that upstream doesn't (besides `CLAUDE.md` and `fork/`).
 |------|--------|----------------|----------------------|
 | 2026-10-19 | Fork setup: `CLAUDE.md`, `fork/` docs | (setup commit) | no |
 
+## Long-lived fork branches (never merged into main)
+| Since | Branch | What | Keeping it current |
+|-------|--------|------|--------------------|
+| 2026-10-19 | `my/psl` | The user's personal Windows-only Port St. Lucie, FL version (another session owns it) | merge `main` into it after each upstream sync |
+
+## Test baseline (Windows, before any of our changes)
+2026-10-19, at `44bfee1` (= upstream 1.5.2-beta + docs), Python 3.13 on Windows 11. Each server test file was
+run on its own with a 5-minute limit (the whole suite in one run takes more than 15 minutes). **69 of 76 files
+pass.** The failures were there before we changed anything; most look like upstream's tests assuming
+Linux/POSIX. Each one is a possible small upstream PR ("tests: pass on Windows"):
+- `test_autodrive_tool`: `tools/autodrive_perf.py` calls `os.sysconf`, which Windows doesn't have.
+- `test_mapdata`: a cache path compared with `/` (Windows gives `\`), and `CREDITS.md` read without
+  `encoding="utf-8"`, which garbles the `©`.
+- `test_launcher_linux` (8 tests): Linux/Flatpak launcher tests that aren't skipped on Windows.
+- `test_chunkcache` (`test_equal_to_full_build`) and `test_v131_default` (a different tile set than the golden
+  file): not diagnosed yet. They may be Windows-specific or real.
+- `test_server`: still running at 5 minutes (it may just be slow). `test_integration_drive` stops with an error
+  after `[WinError 64] The specified network name is no longer available` and then hangs. Compare upstream
+  issue #17 "Specified network name is unavailable".
+- Mod Lua tests: not run yet (`luajit` isn't installed).
+
 ## Open decisions (the user decides)
 - **Name and branding:** keep "BeamNG.Earth" or rename the fork? This affects the mod folder `beamng_earth`
   and the release file names.
